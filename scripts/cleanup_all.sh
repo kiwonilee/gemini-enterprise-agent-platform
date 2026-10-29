@@ -236,7 +236,12 @@ if not engines_to_delete and not sas_to_delete and not (INCLUDE_BUCKET and STAGI
     sys.exit(0)
 
 if not AUTO_YES:
-    ans = input("\n⚠️ 위 리소스를 영구 삭제하시겠습니까? [y/N]: ").strip().lower()
+    try:
+        with open("/dev/tty", "r") as tty:
+            print("\n⚠️ 위 리소스를 영구 삭제하시겠습니까? [y/N]: ", end="", flush=True)
+            ans = tty.readline().strip().lower()
+    except OSError:
+        ans = ""
     if ans not in ("y", "yes"):
         print("🛑 사용자가 취소했습니다.")
         sys.exit(0)
