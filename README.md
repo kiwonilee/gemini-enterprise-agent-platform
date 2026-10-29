@@ -70,7 +70,7 @@ flowchart LR
 
 ### Step 1. 저장소 클론 및 루트 폴더 진입
 ```bash
-git clone <REPO_URL>
+git clone https://github.com/kiwonilee/gemini-enterprise-agent-platform.git
 cd gemini-enterprise-agent-platform
 ```
 
@@ -85,7 +85,7 @@ uv sync
 export PROJECT_ID="YOUR_PROJECT_ID"
 export STAGING_BUCKET_URI="gs://adk-${PROJECT_ID}"
 sed -e "s|your-project-id|${PROJECT_ID}|g" \
-    -e "s|your-gcs-bucket|${STAGING_BUCKET_URI}|g" \
+    -e "s|gs://your-gcs-bucket|${STAGING_BUCKET_URI}|g" \
     .env.template > .env
 
 # ③ GCP API 활성화, GCS 버킷 생성, 서비스 계정(SA 4개) 및 IAM 권한 일괄 설정
