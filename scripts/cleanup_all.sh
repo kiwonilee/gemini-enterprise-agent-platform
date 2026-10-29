@@ -130,6 +130,10 @@ AGENTS = {
         "display_name": "Graph Workflow",
         "uses_unified_sa": True,
     },
+    "currency_exchange_agent": {
+        "display_name": "currency_exchange_agent",
+        "uses_unified_sa": True,
+    },
 }
 
 args = [a.replace("-", "_") for a in sys.argv[1:]]
