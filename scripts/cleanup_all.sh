@@ -184,9 +184,7 @@ for eng in all_engines:
     elif sandbox_parent_engine and name.endswith(sandbox_parent_engine.split("/")[-1]):
         engines_to_delete.append(("agent_sandbox (Sandbox Container)", "<Sandbox Container>", name))
     elif "agent_sandbox" in target_keys and not dname:
-        sb_resp = requests.get(f"{base_api}/{name}/sandboxEnvironments", headers=headers, timeout=30)
-        if sb_resp.ok and sb_resp.json().get("sandboxEnvironments"):
-            engines_to_delete.append(("agent_sandbox (Sandbox Container)", "<Sandbox Container>", name))
+        engines_to_delete.append(("agent_sandbox (Sandbox Container)", "<Sandbox Container>", name))
 
 sas_to_delete = []
 if not SKIP_SA and is_full_cleanup:
@@ -251,11 +249,14 @@ print("\n🚀 리소스 정리를 시작합니다...")
 # 1. Delete Reasoning Engines (with force=true)
 for key, dname, rname in engines_to_delete:
     print(f"🗑️  Deleting Reasoning Engine [{key}] ({rname})...")
-    del_resp = requests.delete(f"{base_api}/{rname}", params={"force": "true"}, headers=headers, timeout=120)
-    if del_resp.ok:
-        print(f"   ✅ 삭제 요청 완료 ({rname})")
-    else:
-        print(f"   ⚠️ 삭제 실패 ({del_resp.status_code}): {del_resp.text}")
+    try:
+        del_resp = requests.delete(f"{base_api}/{rname}", params={"force": "true"}, headers=headers, timeout=120)
+        if del_resp.ok:
+            print(f"   ✅ 삭제 요청 완료 ({rname})")
+        else:
+            print(f"   ⚠️ 삭제 실패 ({del_resp.status_code}): {del_resp.text}")
+    except requests.exceptions.ReadTimeout:
+        print(f"   ⏳ 삭제 요청이 백그라운드에서 진행 중입니다 (ReadTimeout 넘어감: {rname})")
 
 # Clean SANDBOX_RESOURCE_NAME in .env if agent_sandbox was deleted
 if "agent_sandbox" in target_keys and ENV_FILE.exists():
