@@ -26,14 +26,9 @@ uv run python agent_runtime.py
 
 ## 🔍 3. 테스트
 
-### 방법 A: 자동화 스크립트로 테스트
+### `curl`로 직접 호출 테스트
 ```bash
-${ROOT_DIR}/scripts/test_all.sh agent_skills
-```
-
-### 방법 B: `curl`로 직접 호출 테스트
-```bash
-export REASONING_ENGINE_ID="[배포 후 발급받은 REASONING_ENGINE_ID]"
+export REASONING_ENGINE_ID="[배포 후 발급받은 REASONING_ENGINE_ID]" #경로를 제외한 숫자로만 된 부분
 export PROJECT_NUMBER=$(gcloud projects describe $(gcloud config get-value project) --format="value(projectNumber)")
 
 # 1. 세션 생성
@@ -42,7 +37,8 @@ curl -X POST \
   -H "Content-Type: application/json" \
   "https://us-central1-aiplatform.googleapis.com/v1beta1/projects/${PROJECT_NUMBER}/locations/us-central1/reasoningEngines/${REASONING_ENGINE_ID}:query" \
   -d '{"class_method": "create_session", "input": {"user_id": "test_user"}}'
-
+```
+```bash
 # 2. 스트리밍 질의 실행
 export SESSION_ID="[위 단계에서 발급받은 SESSION_ID]"
 export MESSAGE="GKE 의 Cluster Upgrade 에 대한 Best Practice 에 대해서 알려줘"

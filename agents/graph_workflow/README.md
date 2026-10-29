@@ -27,26 +27,14 @@ uv run python agent_runtime.py
 
 ## 🔍 3. 멀티턴 HITL 테스트
 
-### 방법 A: 파이썬 자동화 테스트 스크립트 실행 (추천)
-SSE 스트림에서 `interruptId`와 `response_schema` 키를 자동으로 추출하여 **Case 0(세션 생성) ➔ Case 1(HITL 1) ➔ Case 2(선호도 전달 및 5개 일정 생성) ➔ Case 3(피드백 루프백 수정)** 전 과정을 자동으로 검증합니다.
-
-```bash
-# 현재 폴더에서 직접 실행
-uv run python test_workflow.py
-
-# 또는 통합 테스트 스크립트로 실행
-${ROOT_DIR}/scripts/test_all.sh graph_workflow
-```
-
----
-
-### 방법 B: `curl`로 단계별 직접 호출 테스트
+### `curl`로 단계별 직접 호출 테스트
 
 #### 1️⃣ 세션 생성
 ```bash
-export REASONING_ENGINE_ID="[배포 후 발급받은 REASONING_ENGINE_ID]"
+export REASONING_ENGINE_ID="[배포 후 발급받은 REASONING_ENGINE_ID]" #경로를 제외한 숫자로만 된 부분
 export PROJECT_NUMBER=$(gcloud projects describe $(gcloud config get-value project) --format="value(projectNumber)")
 
+# 1. 세션 생성
 curl -X POST \
   -H "Authorization: Bearer $(gcloud auth print-access-token)" \
   -H "Content-Type: application/json" \
@@ -56,6 +44,7 @@ curl -X POST \
 
 #### 2️⃣ [Case 1] 일정 추천 서비스 시작 (첫 번째 HITL 대기)
 ```bash
+# 2. 스트리밍 질의 실행
 export SESSION_ID="[위 단계에서 발급받은 SESSION_ID]"
 
 curl -s -X POST \
