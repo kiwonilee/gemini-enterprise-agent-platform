@@ -5,6 +5,7 @@ from google.adk.code_executors.agent_engine_sandbox_code_executor import AgentEn
 
 # Load environment variables from .env
 load_dotenv(override=True)
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 
 class DummyLock:
     """threading.Lock의 피클링 불가능 이슈를 우회하기 위한 직렬화 가능 더미 락 컨텍스트 매니저"""
@@ -22,7 +23,7 @@ code_executor._agent_engine_creation_lock = DummyLock()
 
 # 3. 가장 정석적이고 심플한 에이전트 정의
 root_agent = Agent(
-    model="gemini-3.8-flash",
+    model=GEMINI_MODEL,
     name="agent_sandbox",
     instruction="""You are a simple assistant.
     If you need to run Python code, you MUST write the code directly inside a markdown code block (starting with ```python and ending with ```) in your response.

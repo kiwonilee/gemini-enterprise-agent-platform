@@ -25,6 +25,7 @@ from google.adk.tools.skill_toolset import SkillToolset
 load_dotenv(override=True)
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
 LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "global")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 
 
 class KeywordGCPSkillRegistry(GCPSkillRegistry):
@@ -91,7 +92,7 @@ skill_toolset = SkillToolset(skills=[], registry=registry)
 
 root_agent = Agent(
     name="agent_by_skills",
-    model="gemini-3.8-flash",
+    model=GEMINI_MODEL,
     instruction="""
         You are a specialized AI agent designed to discover and execute skills registered in the **Skill Registry** to resolve user requests.
 

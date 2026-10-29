@@ -12,6 +12,7 @@ from agent import root_agent as agent
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
 LOCATION = os.environ.get("GCP_RESOURCES_LOCATION")
 STAGING_BUCKET = os.environ.get("STAGING_BUCKET_URI")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 
 print(f"🛠️ Initializing Agent Platform Client (Project: {PROJECT_ID}, Location: {LOCATION}...")
 client = agentplatform.Client(
@@ -29,7 +30,7 @@ memory_bank_config = {
     # Default Model for Memory Bank is gemini-3.5-flash
     # defining the model will be used to extract and consolidate memories.
     "generation_config": {
-        "model": f"projects/{PROJECT_ID}/locations/global/publishers/google/models/gemini-3.8-flash",
+        "model": f"projects/{PROJECT_ID}/locations/global/publishers/google/models/{GEMINI_MODEL}",
     },
     # Default for Similarity Search Model is text-embedding-005
     # defining the model will be used for similarity search, including during consolidation.
@@ -75,6 +76,7 @@ agent_runtime_config={
     "env_vars": {
         "GOOGLE_CLOUD_LOCATION": "global",
         "GOOGLE_GENAI_USE_VERTEXAI": "TRUE",
+        "GEMINI_MODEL": GEMINI_MODEL,
         # SessionService, MemoryService, ArtifactService
         "ADK_SESSION_SERVICE_URI": "agentengine://",
         "ADK_MEMORY_SERVICE_URI": "agentengine://",

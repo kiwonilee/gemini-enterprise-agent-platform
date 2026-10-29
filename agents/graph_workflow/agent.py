@@ -1,3 +1,4 @@
+import os
 from typing import Any
 from dotenv import load_dotenv
 from google.adk.agents.llm_agent import LlmAgent
@@ -10,6 +11,7 @@ from pydantic import BaseModel
 
 # Load environment variables from .env
 load_dotenv(override=True)
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 
 
 # --- Data classes ---
@@ -29,7 +31,7 @@ class ActivitiesList(BaseModel):
 # 사용자의 입력을 바탕으로 맞춤형 활동 리스트를 생성하는 핵심 LLM 에이전트입니다.
 concierge_agent = LlmAgent(
     name="concierge_agent",
-    model="gemini-3.5-flash",
+    model=GEMINI_MODEL,
     instruction="""
         당신은 사용자의 입력을 기반으로 가고 싶은 도시에 맞는 맞춤형 여행 활동 일정을 계획하는 전문 컨시어지(concierge) 에이전트입니다.
         제공된 장소(도시)와 연령대, 취미 등의 정보를 바탕으로 사용자가 만족할 수 있는 다채롭고 구체적인 여행 활동 목록을 5개 이상 생성해 주세요.

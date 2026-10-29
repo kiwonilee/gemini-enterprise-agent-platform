@@ -12,6 +12,7 @@ from agent import root_agent as agent
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
 LOCATION = os.environ.get("GCP_RESOURCES_LOCATION", "us-central1")
 STAGING_BUCKET = os.environ.get("STAGING_BUCKET_URI")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 
 SERVICE_ACCOUNT = os.environ.get("SERVICE_ACCOUNT", f"sa-agent-platform@{PROJECT_ID}.iam.gserviceaccount.com")
 
@@ -46,6 +47,7 @@ agent_runtime_config={
         "GOOGLE_CLOUD_LOCATION": "global",
         "GCP_RESOURCES_LOCATION": LOCATION,
         "GOOGLE_GENAI_USE_VERTEXAI": "TRUE",
+        "GEMINI_MODEL": GEMINI_MODEL,
         # SessionService, MemoryService, ArtifactService
         "ADK_SESSION_SERVICE_URI": "agentengine://",
         "ADK_MEMORY_SERVICE_URI": "agentengine://",

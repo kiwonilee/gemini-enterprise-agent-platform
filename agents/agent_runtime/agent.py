@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import datetime
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
@@ -24,6 +25,7 @@ from google.adk.tools.preload_memory_tool import PreloadMemoryTool
 
 # Load environment variables from .env
 load_dotenv(override=True)
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 
 
 def get_weather(city: str) -> dict:
@@ -72,7 +74,7 @@ async def add_events_to_memory_callback(callback_context: CallbackContext):
 
 root_agent = Agent(
     name="weather_time_agent",
-    model="gemini-3.8-flash",
+    model=GEMINI_MODEL,
     description="Agent to answer questions about the time and weather in a city.",
     instruction="You are a helpful agent who can answer user questions about the time and weather in a city.",
     after_agent_callback=add_events_to_memory_callback,    

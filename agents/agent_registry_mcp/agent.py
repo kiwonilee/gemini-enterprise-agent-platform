@@ -26,6 +26,7 @@ from google.adk.tools.preload_memory_tool import PreloadMemoryTool
 load_dotenv(override=True)
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
 LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "global")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 MCP_SERVER_NAME = os.environ.get("MCP_SERVER_NAME")
 
 # Initialize the registry client
@@ -50,7 +51,7 @@ async def add_events_to_memory_callback(callback_context: CallbackContext):
 
 root_agent = Agent(
     name="cloud_logging_agent",
-    model="gemini-3.8-flash",
+    model=GEMINI_MODEL,
     instruction=(
         "You are an AI logging agent who can answer questions.\n"
         "Your target Google Cloud Project ID is '{project_id?}'.\n"
