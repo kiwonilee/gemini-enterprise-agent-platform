@@ -19,7 +19,7 @@ ADK 2.0의 **Graph Workflow (`Workflow`)**와 **Human-In-The-Loop (`RequestInput
 ## 🚀 2. 에이전트 배포
 
 ```bash
-cd ~/workspace/gemini-enterprise-agent-platform/agents/graph_workflow
+cd "$(git rev-parse --show-toplevel)/agents/graph_workflow"
 uv run adk run .                   # 로컬 CLI 대화형 테스트 (선택)
 uv run python agent_runtime.py     # 원격 Agent Runtime 배포
 ```
@@ -36,7 +36,7 @@ SSE 스트림에서 `interruptId`와 `response_schema` 키를 자동으로 추�
 uv run python test_workflow.py
 
 # 또는 통합 테스트 스크립트로 실행
-../../scripts/test_all.sh graph_workflow
+"$(git rev-parse --show-toplevel)/scripts/test_all.sh" graph_workflow
 ```
 
 ---
