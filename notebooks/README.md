@@ -4,8 +4,6 @@
 - **[`agent_runtime.ipynb`](agent_runtime.ipynb)**: ADK 에이전트 정의 및 Agent Runtime 원격 배포·스트리밍 호출 실습
 - **[`agent_eval_local.ipynb`](agent_eval_local.ipynb)**: Agent Platform SDK(`client.evals`) 기반 에이전트 추론 기록 및 루브릭 자동 채점 실습
 
-> 각 노트북의 상세 아키텍처와 단계별 설명은 노트북 파일(`.ipynb`) 상단의 마크다운 셀에 기술되어 있습니다.
-
 ---
 
 ## 💻 1. 로컬 환경 (VS Code / Cloud Shell Editor)에서 실행하기
@@ -23,9 +21,9 @@
 
 ---
 
-## ☁️ 2. Vertex AI Workbench (JupyterLab)에서 실행하기
+## ☁️ 2. Agent Platform AI Workbench 에서 실행하기
 
-Google Cloud Console의 **Vertex AI ➔ Workbench** 인스턴스(JupyterLab)에서 실행하는 방법입니다.
+Google Cloud Console의 **Agent Platform Workbench** 인스턴스(JupyterLab)에서 실행하는 방법입니다.
 
 ### Step 1. JupyterLab 터미널에서 저장소 클론 및 `.env` 설정
 Workbench의 JupyterLab 런처에서 **Terminal**을 열고 아래 명령어를 실행합니다:
