@@ -62,7 +62,7 @@ gemini-enterprise-agent-platform/
 ```mermaid
 flowchart LR
     Step1["Step 1. git clone\n& 루트 진입"] --> Step2["Step 2. 루트 초기 설정 (최초 1회)\n• uv sync\n• .env 생성\n• bash scripts/setup_iam.sh"]
-    Step2 --> StepLocal["로컬 테스트 (선택)\n• uv run adk run agents/agent_runtime\n• uv run adk web agents"]
+    Step2 --> StepLocal["로컬 테스트 (선택)\n• uv run adk run agents/agent_runtime\n• uv run adk web --allow_origins '*' agents"]
     Step2 --> Step3A["Step 3-A. 개별 폴더 진입 배포\ncd agents/agent_runtime\nuv run python agent_runtime.py"]
     Step2 --> Step3B["Step 3-B. 루트에서 바로 배포\n./scripts/deploy_all.sh"]
     Step3A & Step3B --> Step4["Step 4. 원격 테스트 및 정리\n• ./scripts/test_all.sh\n• ./scripts/cleanup_all.sh"]
@@ -103,7 +103,8 @@ uv run adk run agents/agent_runtime
 cd agents/agent_runtime && uv run adk run .
 
 # 방법 3: 5개 에이전트 전체를 로컬 Web UI(http://localhost:8000)로 실행
-uv run adk web agents
+# (Cloud Shell Web Preview 등 프록시 환경에서 JS 모듈 403 오류 방지를 위해 --allow_origins "*" 포함)
+uv run adk web --allow_origins "*" agents
 ```
 
 ---
