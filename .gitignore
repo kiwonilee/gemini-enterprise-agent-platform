@@ -7,6 +7,7 @@ venv/
 ENV/
 env/
 .env
+uv.lock
 
 # IDEs
 .vscode/
@@ -15,7 +16,8 @@ env/
 # OS
 .DS_Store
 
-# Databases
+# Databases & ADK local state
+.adk/
 *.db
 *.sqlite
 *.sqlite3

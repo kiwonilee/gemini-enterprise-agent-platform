@@ -1,0 +1,19 @@
+[project]
+name = "graph-workflow"
+version = "0.1.0"
+description = "Workflow agent serving as an interactive HITL concierge."
+authors = [
+    { name = "Tommy Wagner", email = "wagnerthomas@google.com" }
+]
+license = { text = "Apache License 2.0" }
+readme = "README.md"
+requires-python = ">=3.11, <3.12"
+dependencies = [
+    "google-adk[agent-identity,a2a]>=2.12.0",
+    "google-cloud-aiplatform[adk,agent_engines]>=2.6.0",
+    "python-dotenv>=1.2.2",
+    "google-cloud-secret-manager>=2.24.0,<3.0.0",
+    "pydantic",
+    "cloudpickle>=3.1.2",
+    "requests",
+]
