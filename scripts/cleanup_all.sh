@@ -11,7 +11,7 @@ Usage:
 
 Options:
   --dry-run          삭제 대상(Reasoning Engine, Sandbox, IAM 바인딩, Service Account)만 조회하고 실제 삭제는 수행하지 않음
-  --skip-sa          Reasoning Engine만 삭제하고 서비스 계정(SA)은 유지
+  --skip-sa          Reasoning Engine만 삭제하고 통합 서비스 계정(sa-agent-platform)은 유지
   --include-bucket   Staging GCS 버킷(STAGING_BUCKET_URI)까지 함께 삭제
   -y, --yes          확인 프롬프트 없이 즉시 삭제 실행
   -h, --help         도움말 출력
@@ -20,7 +20,7 @@ Examples:
   ./scripts/cleanup_all.sh --dry-run              # 삭제 대상 미리보기
   ./scripts/cleanup_all.sh                        # 전체 Reasoning Engine + Sandbox + SA + IAM 정리
   ./scripts/cleanup_all.sh -y                     # 확인 없이 전체 즉시 정리
-  ./scripts/cleanup_all.sh agent-sandbox          # 특정 에이전트(및 연결된 SA/Sandbox)만 정리
+  ./scripts/cleanup_all.sh agent_sandbox          # 특정 에이전트(및 연결된 Sandbox)만 정리
 EOF
 }
 
@@ -80,16 +80,29 @@ PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT") or subprocess.check_output(
 ).decode().strip()
 LOCATION = os.environ.get("GCP_RESOURCES_LOCATION", "us-central1")
 STAGING_BUCKET_URI = os.environ.get("STAGING_BUCKET_URI", "")
+UNIFIED_SA_EMAIL = os.environ.get("SERVICE_ACCOUNT", f"sa-agent-platform@{PROJECT_ID}.iam.gserviceaccount.com")
 
 DRY_RUN = os.environ.get("DRY_RUN") == "true"
 SKIP_SA = os.environ.get("SKIP_SA") == "true"
 INCLUDE_BUCKET = os.environ.get("INCLUDE_BUCKET") == "true"
 AUTO_YES = os.environ.get("AUTO_YES") == "true"
 
+UNIFIED_SA_ROLES = [
+    "roles/aiplatform.user",
+    "roles/cloudtrace.user",
+    "roles/cloudtrace.agent",
+    "roles/logging.viewer",
+    "roles/logging.logWriter",
+    "roles/storage.objectAdmin",
+    "roles/serviceusage.serviceUsageConsumer",
+    "roles/agentregistry.viewer",
+    "roles/mcp.toolUser",
+]
+
 AGENTS = {
     "agent_runtime": {
         "display_name": "Agent Runtime",
-        "sa_name": None,  # Uses AGENT_IDENTITY
+        "uses_unified_sa": False,  # Uses AGENT_IDENTITY
         "identity_roles": [
             "roles/aiplatform.user",
             "roles/aiplatform.viewer",
@@ -103,53 +116,19 @@ AGENTS = {
     },
     "agent_registry_mcp": {
         "display_name": "Agent Registry for MCP",
-        "sa_name": "sa-agent-registry",
-        "sa_roles": [
-            "roles/cloudtrace.user",
-            "roles/cloudtrace.agent",
-            "roles/logging.viewer",
-            "roles/logging.logWriter",
-            "roles/storage.objectAdmin",
-            "roles/aiplatform.user",
-            "roles/agentregistry.viewer",
-            "roles/mcp.toolUser",
-        ],
+        "uses_unified_sa": True,
     },
     "agent_sandbox": {
         "display_name": "Agent Sandbox",
-        "sa_name": "sa-agent-sandbox",
-        "sa_roles": [
-            "roles/cloudtrace.user",
-            "roles/cloudtrace.agent",
-            "roles/logging.viewer",
-            "roles/logging.logWriter",
-            "roles/storage.objectAdmin",
-            "roles/aiplatform.user",
-        ],
+        "uses_unified_sa": True,
     },
     "agent_skills": {
         "display_name": "Agent Skills",
-        "sa_name": "sa-skill-registry",
-        "sa_roles": [
-            "roles/cloudtrace.user",
-            "roles/cloudtrace.agent",
-            "roles/logging.viewer",
-            "roles/logging.logWriter",
-            "roles/aiplatform.user",
-            "roles/serviceusage.serviceUsageConsumer",
-            "roles/agentregistry.viewer",
-        ],
+        "uses_unified_sa": True,
     },
     "graph_workflow": {
         "display_name": "Graph Workflow",
-        "sa_name": "sa-graph-workflow",
-        "sa_roles": [
-            "roles/cloudtrace.user",
-            "roles/cloudtrace.agent",
-            "roles/logging.viewer",
-            "roles/logging.logWriter",
-            "roles/aiplatform.user",
-        ],
+        "uses_unified_sa": True,
     },
 }
 
@@ -205,25 +184,19 @@ for eng in all_engines:
     elif sandbox_parent_engine and name.endswith(sandbox_parent_engine.split("/")[-1]):
         engines_to_delete.append(("agent_sandbox (Sandbox Container)", "<Sandbox Container>", name))
     elif is_full_cleanup and not dname:
-        # Check if unnamed engine hosts sandboxEnvironments
         sb_resp = requests.get(f"{base_api}/{name}/sandboxEnvironments", headers=headers, timeout=30)
         if sb_resp.ok and sb_resp.json().get("sandboxEnvironments"):
             engines_to_delete.append(("agent_sandbox (Sandbox Container)", "<Sandbox Container>", name))
 
 sas_to_delete = []
-if not SKIP_SA:
-    for k in target_keys:
-        sa_name = AGENTS[k]["sa_name"]
-        if not sa_name:
-            continue
-        sa_email = f"{sa_name}@{PROJECT_ID}.iam.gserviceaccount.com"
-        check = subprocess.run(
-            ["gcloud", "iam", "service-accounts", "describe", sa_email, f"--project={PROJECT_ID}"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        if check.returncode == 0:
-            sas_to_delete.append((k, sa_email, AGENTS[k]["sa_roles"]))
+if not SKIP_SA and is_full_cleanup:
+    check = subprocess.run(
+        ["gcloud", "iam", "service-accounts", "describe", UNIFIED_SA_EMAIL, f"--project={PROJECT_ID}"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    if check.returncode == 0:
+        sas_to_delete.append(("unified-sa", UNIFIED_SA_EMAIL, UNIFIED_SA_ROLES))
 
 print("\n📋 [정리 대상 요약]")
 print(f"  1) Reasoning Engines ({len(engines_to_delete)}개):")
@@ -240,12 +213,14 @@ if identities_to_cleanup:
 else:
     print("     - (없음)")
 
-print(f"  3) Service Accounts 및 IAM 바인딩 ({len(sas_to_delete)}개):")
+print(f"  3) 통합 Service Account 및 IAM 바인딩 ({len(sas_to_delete)}개):")
 if SKIP_SA:
     print("     - (--skip-sa 옵션으로 건너뜀)")
+elif not is_full_cleanup:
+    print(f"     - (개별 에이전트 정리 모드이므로 공유 서비스 계정 {UNIFIED_SA_EMAIL} 유지)")
 elif sas_to_delete:
     for key, sa_email, roles in sas_to_delete:
-        print(f"     - [{key}] {sa_email} (IAM 역할 {len(roles)}개 해제 후 계정 삭제)")
+        print(f"     - {sa_email} (IAM 역할 {len(roles)}개 해제 후 계정 삭제)")
 else:
     print("     - (없음)")
 

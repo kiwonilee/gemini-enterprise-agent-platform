@@ -8,7 +8,7 @@ Google Cloud **Agent Registry**에 등록된 Cloud Logging MCP 서버(`logging.g
 
 ## ⚙️ 1. 에이전트 특화 설정 (MCP 서버 등록)
 
-* **사용 서비스 계정**: `sa-agent-registry@${PROJECT_ID}.iam.gserviceaccount.com`
+* **사용 서비스 계정**: `sa-agent-platform@${PROJECT_ID}.iam.gserviceaccount.com` (통합 서비스 계정)
   - 필수 역할: `roles/agentregistry.viewer`, `roles/mcp.toolUser`, `roles/logging.viewer`, `roles/logging.logWriter`, `roles/aiplatform.user`, `roles/storage.objectAdmin`, `roles/cloudtrace.user` (`scripts/setup_iam.sh` 실행 시 자동 생성·부여됨)
 * **`MCP_SERVER_NAME` 환경 변수 등록**:
   Agent Registry에서 `logging.googleapis.com` MCP 서버의 리소스 이름을 조회하여 루트 `.env`(또는 현재 폴더의 `.env`)에 추가합니다.

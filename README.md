@@ -88,7 +88,7 @@ sed -e "s|your-project-id|${PROJECT_ID}|g" \
     -e "s|gs://your-gcs-bucket|${STAGING_BUCKET_URI}|g" \
     .env.template > .env
 
-# ③ GCP API 활성화, GCS 버킷 생성, 서비스 계정(SA 4개) 및 IAM 권한 일괄 설정
+# ③ GCP API 활성화, GCS 버킷 생성, 통합 서비스 계정(sa-agent-platform) 및 IAM 권한 일괄 설정
 bash scripts/setup_iam.sh
 ```
 
@@ -152,13 +152,13 @@ bash scripts/deploy_all.sh
 
 ## 🧹 5. 배포 리소스 및 서비스 계정(SA) 일괄 정리 (`scripts/cleanup_all.sh`)
 
-실습 및 테스트가 끝난 후, 과금 방지를 위해 원격 Reasoning Engine(하위 세션·메모리·샌드박스 포함), Agent Identity IAM 바인딩, 그리고 생성했던 4개의 서비스 계정(SA) 및 IAM 정책 바인딩을 한 번에 정리할 수 있습니다.
+실습 및 테스트가 끝난 후, 과금 방지를 위해 원격 Reasoning Engine(하위 세션·메모리·샌드박스 포함), Agent Identity IAM 바인딩, 그리고 통합 서비스 계정(`sa-agent-platform`) 및 IAM 정책 바인딩을 한 번에 정리할 수 있습니다.
 
 ```bash
 # 1. 삭제될 대상(Reasoning Engine, Sandbox 컨테이너, SA, IAM 바인딩) 미리보기
 ./scripts/cleanup_all.sh --dry-run
 
-# 2. 전체 Reasoning Engine + Sandbox + 서비스 계정(SA) 및 IAM 바인딩 일괄 삭제
+# 2. 전체 Reasoning Engine + Sandbox + 통합 서비스 계정(sa-agent-platform) 및 IAM 바인딩 일괄 삭제
 ./scripts/cleanup_all.sh
 
 # 3. 확인 프롬프트 없이 즉시 삭제 (Staging GCS 버킷까지 함께 삭제하려면 --include-bucket 추가)
@@ -167,7 +167,7 @@ bash scripts/deploy_all.sh
 # 4. 서비스 계정(SA)은 유지하고 Reasoning Engine만 삭제하고 싶은 경우
 ./scripts/cleanup_all.sh --skip-sa
 
-# 5. 특정 에이전트와 연결된 리소스 및 SA만 선택 삭제
+# 5. 특정 에이전트와 연결된 리소스만 선택 삭제 (공유 서비스 계정은 유지)
 ./scripts/cleanup_all.sh agent_sandbox
 ```
 
@@ -185,7 +185,7 @@ bash scripts/deploy_all.sh
 2. `agents/my_new_agent/` 내부의 3개 파일을 수정합니다:
    - **`pyproject.toml`**: `[project] name = "my-new-agent"`로 변경하고 추가 라이브러리가 있으면 `dependencies`에 선언
    - **`agent.py`**: 에이전트 및 도구 로직 구현 (`root_agent` 정의)
-   - **`agent_runtime.py`**: `agent_runtime_config` 내 `"display_name"`, `"requirements"`, 인증 방식(`SERVICE_ACCOUNT` 또는 `AGENT_IDENTITY`) 설정
+   - **`agent_runtime.py`**: `agent_runtime_config` 내 `"display_name"`, `"requirements"`, 인증 방식(`SERVICE_ACCOUNT` 통합 계정 또는 `AGENT_IDENTITY`) 설정
 3. 의존성 동기화 후 로컬 테스트 및 원격 배포를 수행합니다:
    ```bash
    uv sync
@@ -199,7 +199,7 @@ bash scripts/deploy_all.sh
 
 | 스크립트 파일 | 추가할 내용 |
 | :--- | :--- |
-| `scripts/setup_iam.sh` | *(전용 SA 사용 시)* `create_sa_and_bind "sa-my-new-agent" ...` 호출 추가 |
+| `scripts/setup_iam.sh` | *(통합 SA `sa-agent-platform`에 추가 IAM 역할이 필요한 경우에만)* `ROLES` 배열에 역할 추가 |
 | `scripts/deploy_all.sh` | `ALL_AGENTS` 배열 및 `name_map`에 에이전트 폴더명(`my_new_agent`)·표시명 추가 |
 | `scripts/test_all.sh` | `AGENTS` 딕셔너리에 `display_name` 및 테스트용 `prompt` 추가 |
-| `scripts/cleanup_all.sh` | `AGENTS` 딕셔너리에 `display_name`, `sa_name`, `sa_roles` 추가 |
+| `scripts/cleanup_all.sh` | `AGENTS` 딕셔너리에 `display_name`, `uses_unified_sa` 추가 |

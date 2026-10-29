@@ -13,7 +13,7 @@ PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
 LOCATION = os.environ.get("GCP_RESOURCES_LOCATION", "us-central1")
 STAGING_BUCKET = os.environ.get("STAGING_BUCKET_URI")
 
-SERVICE_ACCOUNT = os.environ.get("SERVICE_ACCOUNT", f"sa-agent-sandbox@{PROJECT_ID}.iam.gserviceaccount.com")
+SERVICE_ACCOUNT = os.environ.get("SERVICE_ACCOUNT", f"sa-agent-platform@{PROJECT_ID}.iam.gserviceaccount.com")
 
 # Initialize the Agent Platform client
 print(f"Initializing Vertex AI Client (Project: {PROJECT_ID}, Location: {LOCATION})...")

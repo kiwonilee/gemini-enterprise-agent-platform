@@ -13,7 +13,7 @@ PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
 LOCATION = os.environ.get("GCP_RESOURCES_LOCATION", "us-central1")
 STAGING_BUCKET = os.environ.get("STAGING_BUCKET_URI")
 
-SERVICE_ACCOUNT = os.environ.get("SERVICE_ACCOUNT", f"sa-agent-registry@{PROJECT_ID}.iam.gserviceaccount.com")
+SERVICE_ACCOUNT = os.environ.get("SERVICE_ACCOUNT", f"sa-agent-platform@{PROJECT_ID}.iam.gserviceaccount.com")
 MCP_SERVER_NAME = os.environ.get("MCP_SERVER_NAME")
 
 # Initialize the Agent Platform client

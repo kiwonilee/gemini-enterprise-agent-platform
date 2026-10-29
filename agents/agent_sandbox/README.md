@@ -8,7 +8,7 @@
 
 ## ⚙️ 1. 에이전트 특화 동작 방식
 
-* **사용 서비스 계정**: `sa-agent-sandbox@${PROJECT_ID}.iam.gserviceaccount.com`
+* **사용 서비스 계정**: `sa-agent-platform@${PROJECT_ID}.iam.gserviceaccount.com` (통합 서비스 계정)
 * **샌드박스 자동 프로비저닝**:
   1. `.env`에 `SANDBOX_RESOURCE_NAME`이 설정되어 있으면 기존 샌드박스를 재사용합니다.
   2. 설정되어 있지 않으면 `agent_runtime.py`가 실행될 때 부모 컨테이너(`AgentEngine`)와 관리형 샌드박스(`sandboxEnvironments`)를 자동으로 생성한 뒤 `SANDBOX_RESOURCE_NAME`을 주입하여 배포합니다.

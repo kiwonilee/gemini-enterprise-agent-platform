@@ -8,7 +8,7 @@ Google Cloud **Skill Registry**에서 사용자 질의에 부합하는 스킬(�
 
 ## ⚙️ 1. 에이전트 특화 구성
 
-* **사용 서비스 계정**: `sa-skill-registry@${PROJECT_ID}.iam.gserviceaccount.com`
+* **사용 서비스 계정**: `sa-agent-platform@${PROJECT_ID}.iam.gserviceaccount.com` (통합 서비스 계정)
   - 필수 역할: `roles/agentregistry.viewer`, `roles/aiplatform.user`, `roles/serviceusage.serviceUsageConsumer`, `roles/logging.viewer`, `roles/logging.logWriter`, `roles/cloudtrace.user` (`scripts/setup_iam.sh` 실행 시 자동 생성·부여됨)
 * **키워드 검색 및 폴백 (`KeywordGCPSkillRegistry`)**:
   `agent.py` 내 `KeywordGCPSkillRegistry`를 통해 `KEYWORD` 검색 모드 및 다중 단어 `OR` 폴백 정렬을 수행하여 `cloud.google.com-*` 1P 스킬 및 커스텀 스킬을 안정적으로 탐색합니다.

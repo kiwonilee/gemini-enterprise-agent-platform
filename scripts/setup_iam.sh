@@ -14,6 +14,8 @@ fi
 PROJECT_ID="${GOOGLE_CLOUD_PROJECT:-$(gcloud config get-value project)}"
 LOCATION="${GCP_RESOURCES_LOCATION:-us-central1}"
 STAGING_BUCKET_URI="${STAGING_BUCKET_URI:-gs://adk-${PROJECT_ID}}"
+SA_NAME="sa-agent-platform"
+SA_EMAIL="${SERVICE_ACCOUNT:-${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com}"
 
 echo "=================================================================="
 echo "🛠️  Setting up GCP APIs, Bucket, and IAM for Project: ${PROJECT_ID}"
@@ -35,47 +37,33 @@ else
   echo "✅ GCS Bucket already exists: ${STAGING_BUCKET_URI}"
 fi
 
-create_sa_and_bind() {
-  local sa_name="$1"
-  local display_name="$2"
-  shift 2
-  local roles=("$@")
-  local sa_email="${sa_name}@${PROJECT_ID}.iam.gserviceaccount.com"
+if ! gcloud iam service-accounts describe "${SA_EMAIL}" --project="${PROJECT_ID}" >/dev/null 2>&1; then
+  echo "👤 Creating unified service account: ${SA_EMAIL}"
+  gcloud iam service-accounts create "${SA_NAME}" \
+    --display-name="Agent Platform Service Account" \
+    --project="${PROJECT_ID}"
+else
+  echo "✅ Service account exists: ${SA_EMAIL}"
+fi
 
-  if ! gcloud iam service-accounts describe "${sa_email}" --project="${PROJECT_ID}" >/dev/null 2>&1; then
-    echo "👤 Creating service account: ${sa_email}"
-    gcloud iam service-accounts create "${sa_name}" \
-      --display-name="${display_name}" \
-      --project="${PROJECT_ID}"
-  else
-    echo "✅ Service account exists: ${sa_email}"
-  fi
+ROLES=(
+  "roles/aiplatform.user"
+  "roles/cloudtrace.user"
+  "roles/cloudtrace.agent"
+  "roles/logging.viewer"
+  "roles/logging.logWriter"
+  "roles/storage.objectAdmin"
+  "roles/serviceusage.serviceUsageConsumer"
+  "roles/agentregistry.viewer"
+  "roles/mcp.toolUser"
+)
 
-  for role in "${roles[@]}"; do
-    gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
-      --member="serviceAccount:${sa_email}" \
-      --role="${role}" \
-      --quiet >/dev/null
-  done
-  echo "🔑 Bound IAM roles for ${sa_email}"
-}
-
-create_sa_and_bind "sa-agent-registry" "agent-registry-sa" \
-  "roles/cloudtrace.user" "roles/cloudtrace.agent" "roles/logging.viewer" \
-  "roles/logging.logWriter" "roles/storage.objectAdmin" "roles/aiplatform.user" \
-  "roles/agentregistry.viewer" "roles/mcp.toolUser"
-
-create_sa_and_bind "sa-agent-sandbox" "agent-sandbox-sa" \
-  "roles/cloudtrace.user" "roles/cloudtrace.agent" "roles/logging.viewer" \
-  "roles/logging.logWriter" "roles/storage.objectAdmin" "roles/aiplatform.user"
-
-create_sa_and_bind "sa-skill-registry" "skill-registry-sa" \
-  "roles/cloudtrace.user" "roles/cloudtrace.agent" "roles/logging.viewer" \
-  "roles/logging.logWriter" "roles/aiplatform.user" \
-  "roles/serviceusage.serviceUsageConsumer" "roles/agentregistry.viewer"
-
-create_sa_and_bind "sa-graph-workflow" "graph-workflow-sa" \
-  "roles/cloudtrace.user" "roles/cloudtrace.agent" "roles/logging.viewer" \
-  "roles/logging.logWriter" "roles/aiplatform.user"
+for role in "${ROLES[@]}"; do
+  gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
+    --member="serviceAccount:${SA_EMAIL}" \
+    --role="${role}" \
+    --quiet >/dev/null
+done
+echo "🔑 Bound IAM roles for ${SA_EMAIL}"
 
 echo "✅ GCP IAM and infrastructure setup complete!"
