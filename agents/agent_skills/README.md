@@ -18,9 +18,8 @@ Google Cloud **Skill Registry**에서 사용자 질의에 부합하는 스킬(�
 ## 🚀 2. 에이전트 배포
 
 ```bash
-cd "$(git rev-parse --show-toplevel)/agents/agent_skills"
-uv run adk run .                   # 로컬 CLI 대화형 테스트 (선택)
-uv run python agent_runtime.py     # 원격 Agent Runtime 배포
+cd ${ROOT_DIR}/agents/agent_skills
+uv run python agent_runtime.py
 ```
 
 ---
@@ -29,7 +28,7 @@ uv run python agent_runtime.py     # 원격 Agent Runtime 배포
 
 ### 방법 A: 자동화 스크립트로 테스트
 ```bash
-"$(git rev-parse --show-toplevel)/scripts/test_all.sh" agent_skills
+${ROOT_DIR}/scripts/test_all.sh agent_skills
 ```
 
 ### 방법 B: `curl`로 직접 호출 테스트

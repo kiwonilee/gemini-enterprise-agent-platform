@@ -60,22 +60,27 @@ gemini-enterprise-agent-platform/
 
 ```mermaid
 flowchart LR
-    Step1["Step 1. git clone\n& 루트 진입"] --> Step2["Step 2. 루트 초기 설정 (최초 1회)\n• uv sync\n• .env 생성\n• bash scripts/setup_iam.sh"]
+    Step1["Step 1. git clone & 루트 진입\nexport ROOT_DIR=$(pwd)"] --> Step2["Step 2. 루트 초기 설정 (최초 1회)\n• uv sync\n• .env 생성\n• bash scripts/setup_iam.sh"]
     Step2 --> StepLocal["로컬 테스트 (선택)\n• uv run adk run agents/agent_runtime\n• uv run adk web --allow_origins '*' agents"]
-    Step2 --> Step3["Step 3. 개별 폴더 진입 배포\ncd agents/<에이전트_폴더>\nuv run python agent_runtime.py"]
-    Step3 --> Step4["Step 4. 원격 테스트 및 정리\n• ./scripts/test_all.sh\n• ./scripts/cleanup_all.sh"]
+    Step2 --> Step3["Step 3. 개별 폴더 진입 배포\ncd $ROOT_DIR/agents/<에이전트_폴더>\nuv run python agent_runtime.py"]
+    Step3 --> Step4["Step 4. 원격 테스트 및 정리\n• $ROOT_DIR/scripts/test_all.sh\n• $ROOT_DIR/scripts/cleanup_all.sh"]
 ```
 
-### Step 1. 저장소 클론 및 루트 폴더 진입
+### Step 1. 저장소 클론 및 루트 경로 환경 변수(`ROOT_DIR`) 설정
+이후 어느 디렉토리로 이동하든 루트 경로를 바로 참조할 수 있도록 `ROOT_DIR` 환경 변수를 먼저 지정합니다.
+
 ```bash
 git clone https://github.com/kiwonilee/gemini-enterprise-agent-platform.git
 cd gemini-enterprise-agent-platform
+export ROOT_DIR=$(pwd)
 ```
 
 ### Step 2. 루트 폴더에서 최초 1회 공통 설정
-어느 에이전트를 실행·배포하든 아래 3가지는 **최상위 루트 경로에서 최초 1회만** 실행하면 됩니다.
+어느 에이전트를 실행·배포하든 아래 3가지는 **최상위 루트 경로(`${ROOT_DIR}`)에서 최초 1회만** 실행하면 됩니다.
 
 ```bash
+cd ${ROOT_DIR}
+
 # ① 통합 가상환경(.venv) 생성 및 모든 에이전트 패키지 한 번에 설치
 uv sync
 
@@ -84,35 +89,37 @@ export PROJECT_ID="YOUR_PROJECT_ID"
 export STAGING_BUCKET_URI="gs://adk-${PROJECT_ID}"
 sed -e "s|your-project-id|${PROJECT_ID}|g" \
     -e "s|gs://your-gcs-bucket|${STAGING_BUCKET_URI}|g" \
-    .env.template > .env
+    ${ROOT_DIR}/.env.template > ${ROOT_DIR}/.env
 
 # ③ GCP API 활성화, GCS 버킷 생성, 통합 서비스 계정(sa-agent-platform) 및 IAM 권한 일괄 설정
-bash scripts/setup_iam.sh
+bash ${ROOT_DIR}/scripts/setup_iam.sh
 ```
 
 ### 💻 (선택) 로컬에서 에이전트 즉시 실행 및 디버깅 (`adk run` / `adk web`)
 원격 배포 전에 로컬 터미널(CLI)이나 브라우저(Web UI)에서 에이전트를 바로 테스트할 수 있습니다.
 
 ```bash
+cd ${ROOT_DIR}
+
 # 방법 1: 루트에서 특정 에이전트 CLI 대화형 실행
 uv run adk run agents/agent_runtime
 
 # 방법 2: 에이전트 폴더 내부에서 CLI 실행
-cd agents/agent_runtime && uv run adk run .
+cd ${ROOT_DIR}/agents/agent_runtime && uv run adk run .
 
 # 방법 3: 5개 에이전트 전체를 로컬 Web UI(http://localhost:8000)로 실행
 # (Cloud Shell Web Preview 등 프록시 환경에서 JS 모듈 403 오류 방지를 위해 --allow_origins "*" 포함)
-uv run adk web --allow_origins "*" agents
+cd ${ROOT_DIR} && uv run adk web --allow_origins "*" agents
 ```
 
 ---
 
 ## 🚀 3. Step 3: Agent Runtime 에 원격 배포 (개별 에이전트 폴더 진입)
 
-배포하고자 하는 에이전트 폴더로 이동(`cd`)한 뒤, 해당 폴더의 `README.md` 안내에 따라 `agent_runtime.py`를 실행하여 배포합니다. 상위 루트의 `.venv`와 `.env`를 자동으로 공유하며, `AGENT_IDENTITY`를 사용하는 에이전트(`agent_runtime` 등)는 배포 직후 콘솔에 출력되는 IAM 권한 부여 명령어를 실행합니다.
+배포하고자 하는 에이전트 폴더(`${ROOT_DIR}/agents/<에이전트_폴더>`)로 이동한 뒤 `uv run python agent_runtime.py`를 실행하여 배포합니다. 상위 루트의 `.venv`와 `.env`를 자동으로 공유하며, `AGENT_IDENTITY`를 사용하는 에이전트(`agent_runtime` 등)는 배포 직후 콘솔에 출력되는 IAM 권한 부여 명령어를 실행합니다.
 
 ```bash
-cd agents/agent_runtime
+cd ${ROOT_DIR}/agents/agent_runtime
 uv run python agent_runtime.py
 ```
 
@@ -124,17 +131,17 @@ uv run python agent_runtime.py
 
 ### 방법 1: 전체 에이전트 일괄 테스트 (추천)
 ```bash
-./scripts/test_all.sh
+${ROOT_DIR}/scripts/test_all.sh
 ```
 
 ### 방법 2: 특정 에이전트 개별 테스트
 ```bash
 # 특정 에이전트 이름으로 테스트 (배포된 엔진 ID 자동 조회)
-./scripts/test_all.sh agent_runtime
-./scripts/test_all.sh graph_workflow
+${ROOT_DIR}/scripts/test_all.sh agent_runtime
+${ROOT_DIR}/scripts/test_all.sh graph_workflow
 
 # 특정 REASONING_ENGINE_ID를 직접 지정하여 테스트
-./scripts/test_all.sh <REASONING_ENGINE_ID> [agent_registry_mcp|agent_sandbox|agent_skills|agent_runtime|graph_workflow]
+${ROOT_DIR}/scripts/test_all.sh <REASONING_ENGINE_ID> [agent_registry_mcp|agent_sandbox|agent_skills|agent_runtime|graph_workflow]
 ```
 
 ---
@@ -145,19 +152,19 @@ uv run python agent_runtime.py
 
 ```bash
 # 1. 삭제될 대상(Reasoning Engine, Sandbox 컨테이너, SA, IAM 바인딩) 미리보기
-./scripts/cleanup_all.sh --dry-run
+${ROOT_DIR}/scripts/cleanup_all.sh --dry-run
 
 # 2. 전체 Reasoning Engine + Sandbox + 통합 서비스 계정(sa-agent-platform) 및 IAM 바인딩 일괄 삭제
-./scripts/cleanup_all.sh
+${ROOT_DIR}/scripts/cleanup_all.sh
 
 # 3. 확인 프롬프트 없이 즉시 삭제 (Staging GCS 버킷까지 함께 삭제하려면 --include-bucket 추가)
-./scripts/cleanup_all.sh -y
+${ROOT_DIR}/scripts/cleanup_all.sh -y
 
 # 4. 서비스 계정(SA)은 유지하고 Reasoning Engine만 삭제하고 싶은 경우
-./scripts/cleanup_all.sh --skip-sa
+${ROOT_DIR}/scripts/cleanup_all.sh --skip-sa
 
 # 5. 특정 에이전트와 연결된 리소스만 선택 삭제 (공유 서비스 계정은 유지)
-./scripts/cleanup_all.sh agent_sandbox
+${ROOT_DIR}/scripts/cleanup_all.sh agent_sandbox
 ```
 
 ---
@@ -169,17 +176,17 @@ uv run python agent_runtime.py
 ### 1단계: 에이전트 폴더 생성 및 개별 배포 (필수)
 1. 기존 에이전트 폴더를 템플릿 삼아 새 폴더를 복사합니다 (`adk run` 호환을 위해 폴더명에 `_` 사용):
    ```bash
-   cp -r agents/agent_runtime agents/my_new_agent
+   cp -r ${ROOT_DIR}/agents/agent_runtime ${ROOT_DIR}/agents/my_new_agent
    ```
-2. `agents/my_new_agent/` 내부의 3개 파일을 수정합니다:
+2. `${ROOT_DIR}/agents/my_new_agent/` 내부의 3개 파일을 수정합니다:
    - **`pyproject.toml`**: `[project] name = "my-new-agent"`로 변경하고 추가 라이브러리가 있으면 `dependencies`에 선언
    - **`agent.py`**: 에이전트 및 도구 로직 구현 (`root_agent` 정의)
    - **`agent_runtime.py`**: `agent_runtime_config` 내 `"display_name"`, `"requirements"`, 인증 방식(`SERVICE_ACCOUNT` 통합 계정 또는 `AGENT_IDENTITY`) 설정
-3. 의존성 동기화 후 로컬 테스트 및 원격 배포를 수행합니다:
+3. 의존성 동기화 후 원격 배포를 수행합니다:
    ```bash
-   uv sync
-   uv run adk run agents/my_new_agent
-   cd agents/my_new_agent && uv run python agent_runtime.py
+   cd ${ROOT_DIR} && uv sync
+   cd ${ROOT_DIR}/agents/my_new_agent
+   uv run python agent_runtime.py
    ```
 
 ### 2단계: 테스트 및 정리 스크립트(`scripts/*.sh`) 연동 (선택)

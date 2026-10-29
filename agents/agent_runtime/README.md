@@ -11,9 +11,8 @@
 해당 에이전트 폴더로 이동하여 배포합니다.
 
 ```bash
-cd "$(git rev-parse --show-toplevel)/agents/agent_runtime"
-uv run adk run .                   # 로컬 CLI 대화형 테스트 (선택)
-uv run python agent_runtime.py     # 원격 Agent Runtime 배포
+cd ${ROOT_DIR}/agents/agent_runtime
+uv run python agent_runtime.py
 ```
 
 * 배포가 완료되면 콘솔에 **Remote Agent Name**과 **Agent Identity (`effective_identity`)** 및 권한 부여 명령어가 출력됩니다.
@@ -52,7 +51,7 @@ done
 
 ### 방법 A: 자동화 스크립트로 테스트
 ```bash
-"$(git rev-parse --show-toplevel)/scripts/test_all.sh" agent_runtime
+${ROOT_DIR}/scripts/test_all.sh agent_runtime
 ```
 
 ### 방법 B: `curl`로 직접 호출 테스트
