@@ -13,8 +13,9 @@ gemini-enterprise-agent-platform/
 │   ├── agent_skills/             # Skill Registry 플레이북 검색·로드 에이전트
 │   └── graph_workflow/           # ADK 2.0 Graph Workflow + HITL 컨시어지 에이전트
 ├── notebooks/                    # 📓 Jupyter Notebook 실습 및 평가 환경
-│   ├── agent-runtime/            # Agent Runtime 노트북 실습
-│   └── agent-eval/               # Agent Evaluation (품질 플라이휠) 실습
+│   ├── README.md                 # 노트북 실행 가이드 및 평가 아키텍처 개요
+│   ├── agent_runtime.ipynb       # Agent Runtime 배포 및 스트리밍 호출 실습
+│   └── agent_eval_local.ipynb    # Agent Evaluation (품질 플라이휠) 실습
 └── scripts/                      # 🛠️ 일괄 환경 구성, 테스트 및 리소스 정리 스크립트
     ├── setup_iam.sh              # API 활성화, GCS 버킷 및 통합 서비스 계정(sa-agent-platform)/IAM 일괄 설정
     ├── test_all.sh               # 전체(또는 개별) 에이전트 End-to-End 자동화 테스트
@@ -43,7 +44,7 @@ gemini-enterprise-agent-platform/
    - **핵심 기능**: `Graph Workflow` \| `HITL (RequestInput / Resume)` \| `Agent Runtime`
 
 ### 📓 실습 및 평가 노트북 (`notebooks/`)
-6. 📓 **[`notebooks/agent-runtime`](notebooks/agent-runtime/README.md)** & **[`notebooks/agent-eval`](notebooks/agent-eval/README.md)**
+6. 📓 **[`notebooks/`](notebooks/README.md)** ([`agent_runtime.ipynb`](notebooks/agent_runtime.ipynb), [`agent_eval_local.ipynb`](notebooks/agent_eval_local.ipynb))
    - **역할**: 노트북 기반 Agent Runtime 실습 및 Agent Evaluation(품질 플라이휠) 환경
 
 ---
