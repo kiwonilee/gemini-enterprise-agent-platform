@@ -183,7 +183,7 @@ for eng in all_engines:
             identities_to_cleanup.append((eff_id, AGENTS["agent_runtime"]["identity_roles"]))
     elif sandbox_parent_engine and name.endswith(sandbox_parent_engine.split("/")[-1]):
         engines_to_delete.append(("agent_sandbox (Sandbox Container)", "<Sandbox Container>", name))
-    elif is_full_cleanup and not dname:
+    elif "agent_sandbox" in target_keys and not dname:
         sb_resp = requests.get(f"{base_api}/{name}/sandboxEnvironments", headers=headers, timeout=30)
         if sb_resp.ok and sb_resp.json().get("sandboxEnvironments"):
             engines_to_delete.append(("agent_sandbox (Sandbox Container)", "<Sandbox Container>", name))

@@ -13,10 +13,9 @@ class DummyLock:
     def __exit__(self, exc_type, exc_val, exc_tb): pass
 
 
-# 1. 네이티브 샌드박스 실행기 생성
-code_executor = AgentEngineSandboxCodeExecutor(
-    sandbox_resource_name=os.getenv("SANDBOX_RESOURCE_NAME")
-)
+# 1. 네이티브 샌드박스 실행기 생성 (세션별 샌드박스 동적 생성)
+code_executor = AgentEngineSandboxCodeExecutor()
+code_executor._location = os.environ.get("GCP_RESOURCES_LOCATION", "us-central1")
 
 # 2. 직렬화 충돌을 야기하는 threading.Lock 객체를 피클링이 잘 되는 DummyLock으로 치환
 code_executor._agent_engine_creation_lock = DummyLock()

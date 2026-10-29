@@ -9,9 +9,9 @@
 ## ⚙️ 1. 에이전트 특화 동작 방식
 
 * **사용 서비스 계정**: `sa-agent-platform@${PROJECT_ID}.iam.gserviceaccount.com` (통합 서비스 계정)
-* **샌드박스 자동 프로비저닝**:
-  1. `.env`에 `SANDBOX_RESOURCE_NAME`이 설정되어 있으면 기존 샌드박스를 재사용합니다.
-  2. 설정되어 있지 않으면 `agent_runtime.py`가 실행될 때 부모 컨테이너(`AgentEngine`)와 관리형 샌드박스(`sandboxEnvironments`)를 자동으로 생성한 뒤 `SANDBOX_RESOURCE_NAME`을 주입하여 배포합니다.
+* **세션별 샌드박스 동적 프로비저닝**:
+  1. `AgentEngineSandboxCodeExecutor()`에 고정 샌드박스 경로를 지정하지 않아, 대화 세션에서 최초로 파이썬 코드를 실행할 때 **세션 전용 관리형 샌드박스(`sandboxEnvironments`)가 자동으로 생성**됩니다.
+  2. 생성된 샌드박스 경로는 `session.state['sandbox_name']`에 저장되어, **동일 세션 내 연속 질문에서는 기존 샌드박스(변수·파일 상태)가 그대로 재사용**되고 다른 세션과는 완벽히 격리됩니다.
 
 ---
 
