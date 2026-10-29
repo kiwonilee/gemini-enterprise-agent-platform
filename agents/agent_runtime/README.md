@@ -8,7 +8,7 @@
 
 ## 🚀 1. 에이전트 배포
 
-해당 에이전트 폴더로 이동하여 배포하거나, 루트에서 바로 배포할 수 있습니다.
+해당 에이전트 폴더로 이동하여 배포합니다.
 
 ```bash
 cd ~/workspace/gemini-enterprise-agent-platform/agents/agent_runtime

@@ -16,9 +16,8 @@ gemini-enterprise-agent-platform/
 ├── notebooks/                    # 📓 Jupyter Notebook 실습 및 평가 환경
 │   ├── agent-runtime/            # Agent Runtime 노트북 실습
 │   └── agent-eval/               # Agent Evaluation (품질 플라이휠) 실습
-└── scripts/                      # 🛠️ 일괄 환경 구성, 배포, 테스트 및 리소스 정리 스크립트
-    ├── setup_iam.sh              # API 활성화, GCS 버킷 및 서비스 계정/IAM 일괄 설정
-    ├── deploy_all.sh             # 전체(또는 개별) 에이전트 순차 배포
+└── scripts/                      # 🛠️ 일괄 환경 구성, 테스트 및 리소스 정리 스크립트
+    ├── setup_iam.sh              # API 활성화, GCS 버킷 및 통합 서비스 계정(sa-agent-platform)/IAM 일괄 설정
     ├── test_all.sh               # 전체(또는 개별) 에이전트 End-to-End 자동화 테스트
     └── cleanup_all.sh            # 배포된 Reasoning Engine, Sandbox, 서비스 계정(SA) 및 IAM 일괄 정리
 ```
@@ -63,9 +62,8 @@ gemini-enterprise-agent-platform/
 flowchart LR
     Step1["Step 1. git clone\n& 루트 진입"] --> Step2["Step 2. 루트 초기 설정 (최초 1회)\n• uv sync\n• .env 생성\n• bash scripts/setup_iam.sh"]
     Step2 --> StepLocal["로컬 테스트 (선택)\n• uv run adk run agents/agent_runtime\n• uv run adk web --allow_origins '*' agents"]
-    Step2 --> Step3A["Step 3-A. 개별 폴더 진입 배포\ncd agents/agent_runtime\nuv run python agent_runtime.py"]
-    Step2 --> Step3B["Step 3-B. 루트에서 바로 배포\n./scripts/deploy_all.sh"]
-    Step3A & Step3B --> Step4["Step 4. 원격 테스트 및 정리\n• ./scripts/test_all.sh\n• ./scripts/cleanup_all.sh"]
+    Step2 --> Step3["Step 3. 개별 폴더 진입 배포\ncd agents/<에이전트_폴더>\nuv run python agent_runtime.py"]
+    Step3 --> Step4["Step 4. 원격 테스트 및 정리\n• ./scripts/test_all.sh\n• ./scripts/cleanup_all.sh"]
 ```
 
 ### Step 1. 저장소 클론 및 루트 폴더 진입
@@ -109,23 +107,13 @@ uv run adk web --allow_origins "*" agents
 
 ---
 
-## 🚀 3. Step 3: Agent Runtime 에 원격 배포
+## 🚀 3. Step 3: Agent Runtime 에 원격 배포 (개별 에이전트 폴더 진입)
 
-원하는 에이전트 폴더로 들어가서(`cd`) 배포하거나, 루트 경로에서 배포 스크립트를 실행할 수 있습니다. 두 방식 모두 상위 루트의 `.venv`와 `.env`를 자동으로 공유합니다.
+배포하고자 하는 에이전트 폴더로 이동(`cd`)한 뒤, 해당 폴더의 `README.md` 안내에 따라 `agent_runtime.py`를 실행하여 배포합니다. 상위 루트의 `.venv`와 `.env`를 자동으로 공유하며, `AGENT_IDENTITY`를 사용하는 에이전트(`agent_runtime` 등)는 배포 직후 콘솔에 출력되는 IAM 권한 부여 명령어를 실행합니다.
 
-### 방법 A: 배포할 에이전트 폴더로 들어가서 실행 (개별 실습 시)
 ```bash
 cd agents/agent_runtime
 uv run python agent_runtime.py
-```
-
-### 방법 B: 루트 폴더에서 스크립트로 배포
-```bash
-# 특정 에이전트만 지정하여 배포
-bash scripts/deploy_all.sh agent_runtime
-
-# 5개 에이전트 전체 순차 배포
-bash scripts/deploy_all.sh
 ```
 
 ---
@@ -192,15 +180,13 @@ bash scripts/deploy_all.sh
    uv sync
    uv run adk run agents/my_new_agent
    cd agents/my_new_agent && uv run python agent_runtime.py
-   # 또는 루트에서: ./scripts/deploy_all.sh my_new_agent
    ```
 
-### 2단계: 일괄 실행 스크립트(`scripts/*.sh`) 연동 (선택)
-인자 없이 `./scripts/deploy_all.sh`, `./scripts/test_all.sh`, `./scripts/cleanup_all.sh`를 실행할 때 새 에이전트도 포함하려면 아래 항목만 추가합니다:
+### 2단계: 테스트 및 정리 스크립트(`scripts/*.sh`) 연동 (선택)
+인자 없이 `./scripts/test_all.sh`, `./scripts/cleanup_all.sh`를 실행할 때 새 에이전트도 포함하려면 아래 항목만 추가합니다:
 
 | 스크립트 파일 | 추가할 내용 |
 | :--- | :--- |
 | `scripts/setup_iam.sh` | *(통합 SA `sa-agent-platform`에 추가 IAM 역할이 필요한 경우에만)* `ROLES` 배열에 역할 추가 |
-| `scripts/deploy_all.sh` | `ALL_AGENTS` 배열 및 `name_map`에 에이전트 폴더명(`my_new_agent`)·표시명 추가 |
 | `scripts/test_all.sh` | `AGENTS` 딕셔너리에 `display_name` 및 테스트용 `prompt` 추가 |
 | `scripts/cleanup_all.sh` | `AGENTS` 딕셔너리에 `display_name`, `uses_unified_sa` 추가 |
